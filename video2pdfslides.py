@@ -9,9 +9,9 @@ import argparse
 
 ############# Define constants
 
-OUTPUT_SLIDES_DIR = f"./output"
+OUTPUT_SLIDES_DIR = f"/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week\ 01"
 
-FRAME_RATE = 3                   # no.of frames per second that needs to be processed, fewer the count faster the speed
+FRAME_RATE = 1                   # no.of frames per second that needs to be processed, fewer the count faster the speed
 WARMUP = FRAME_RATE              # initial number of frames to be skipped
 FGBG_HISTORY = FRAME_RATE * 15   # no.of frames in background object
 VAR_THRESHOLD = 16               # Threshold on the squared Mahalanobis distance between the pixel and the model to decide whether a pixel is well described by the background model.
@@ -42,7 +42,7 @@ def get_frames(video_path):
         # grab a frame from the video
 
         vs.set(cv2.CAP_PROP_POS_MSEC, frame_time * 1000)    # move frame to a timestamp
-        frame_time += 1/FRAME_RATE
+        frame_time += 1/FRAME_RATE # OVERRIDE frame_rate by 5s
 
         (_, frame) = vs.read()
         # if the frame is None, then we have reached the end of the video file
@@ -56,13 +56,13 @@ def get_frames(video_path):
  
 
 
-def detect_unique_screenshots(video_path, output_folder_screenshot_path):
-    ''''''
+def detect_unique_screenshots(video_path, output_folder_screenshot_path, md_open_file):
+    """
     # Initialize fgbg a Background object with Parameters
     # history = The number of frames history that effects the background subtractor
     # varThreshold = Threshold on the squared Mahalanobis distance between the pixel and the model to decide whether a pixel is well described by the background model. This parameter does not affect the background update.
     # detectShadows = If true, the algorithm will detect shadows and mark them. It decreases the speed a bit, so if you do not need this feature, set the parameter to false.
-
+    """
     fgbg = cv2.createBackgroundSubtractorMOG2(history=FGBG_HISTORY, varThreshold=VAR_THRESHOLD,detectShadows=DETECT_SHADOWS)
 
     
@@ -96,6 +96,13 @@ def detect_unique_screenshots(video_path, output_folder_screenshot_path):
             path = os.path.join(output_folder_screenshot_path, filename)
             print("saving {}".format(path))
             cv2.imwrite(path, orig)
+
+            image_ref = path.rsplit("trunk")[-1]
+            image_ref = image_ref.replace(" ", "%20")
+
+            # ![](_3-CUBCS/DataMining/CSCA5502-DataMiningPipeline/4.2-CorrelationAnalysis/000_0.03.png)
+            new_line = "![](" + image_ref + ")\n"
+            md_open_file.write(new_line)
             screenshoots_count += 1
 
         # otherwise, either the scene is changing or we're still in warmup
@@ -132,29 +139,95 @@ def convert_screenshots_to_pdf(output_folder_screenshot_path):
 
 
 if __name__ == "__main__":
+    video_paths = [
+        # "/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week 01/07 - Data Mining Technique View/01 - Lecture video (720p).mp4",
+    ]
     
-#     video_path = "./input/Test Video 2.mp4"
-#     choice = 'y'
-#     output_folder_screenshot_path = initialize_output_folder(video_path)
-    
-    
-    parser = argparse.ArgumentParser("video_path")
-    parser.add_argument("video_path", help="path of video to be converted to pdf slides", type=str)
-    args = parser.parse_args()
-    video_path = args.video_path
+    curr_path = "/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week 01/"
+    dir_list = os.listdir(curr_path)
+    for d in dir_list:
+        if os.path.isfile(os.path.join(curr_path, d)):
+            continue
+        file_list = os.listdir(os.path.join(curr_path, d))
+        for f in file_list:
+            if not os.path.isdir(os.path.join(curr_path, d)):
+                continue
+            if ".mp4" in f:
+                video_paths.append(os.path.join(curr_path, d, f))
+    #     output_folder_screenshot_path = initialize_output_folder(video_path)
+    #     detect_unique_screenshots(video_path, output_folder_screenshot_path)
+    #     convert_screenshots_to_pdf(output_folder_screenshot_path)
+    COURSERA_DL_FORMAT = False
+    if COURSERA_DL_FORMAT:
+        ...
+    elif len(video_paths) > 0:
+        for video_path in video_paths:
+            output_path = "/home/marcochsner/Documents/trunk/_3-CUBCS/Networks/Networks1/Wk1/"
+            choice = 'y'
+            output_folder_screenshot_path = initialize_output_folder(video_path)
+            print('video_path', video_path)
+            # output_folder_screenshot_path = initialize_output_folder(video_path)
+            video_path_array = video_path.rsplit("/")
+            coursera_dl_format = True
+            base_name_no_extension = ("/".join(video_path_array[:-1]) + "/" + ".".join(video_path_array[-1].rsplit(".")[:-1])) \
+                if not coursera_dl_format \
+                else ("/".join(video_path_array[:-2]) + "/" + (video_path_array[-2]))
 
-    print('video_path', video_path)
-    output_folder_screenshot_path = initialize_output_folder(video_path)
-    detect_unique_screenshots(video_path, output_folder_screenshot_path)
+            image_output_path = base_name_no_extension + "/"
+            markdown_path = base_name_no_extension + ".md"
 
-    print('Please Manually verify screenshots and delete duplicates')
-    while True:
-        choice = input("Press y to continue and n to terminate")
-        choice = choice.lower().strip()
-        if choice in ['y', 'n']:
-            break
-        else:
-            print('please enter a valid choice')
+            os.makedirs(image_output_path, exist_ok=True)
+            md_open_file = open(markdown_path, "w")  # Create if DNE
 
-    if choice == 'y':
-        convert_screenshots_to_pdf(output_folder_screenshot_path)
+            detect_unique_screenshots(video_path, image_output_path, md_open_file)
+            md_open_file.close()
+
+            print('Please Manually verify screenshots and delete duplicates')
+            while True:
+                # choice = input("Press y to continue and n to terminate")
+                choice = choice.lower().strip()
+                if choice in ['y', 'n']:
+                    break
+                else:
+                    print('please enter a valid choice')
+
+            # if choice == 'y':
+                # convert_screenshots_to_pdf(output_folder_screenshot_path)
+    else:
+        parser = argparse.ArgumentParser(prog="ProgramName", description="What the program does")
+        parser.add_argument("video_path", help="path of video to be converted to pdf slides", type=str)
+        parser.add_argument("-o", "--output", help="output folder relative or not", type=str)
+        # parser.add_argument("-m", "--markdown-file", help="output folder relative or not", type=str)
+        # parser.add_argument("-g", "--gen-markdown-file", type=bool)
+
+        args = parser.parse_args()
+        video_path = args.video_path
+        output_path = args.output
+        # markdown_file = args.markdown_file
+        # gen_markdown_file = args.gen_markdown_file
+        print('video_path', video_path)
+        # output_folder_screenshot_path = initialize_output_folder(video_path)
+        video_path_array = video_path.rsplit("/")
+        base_name_no_extension = "/".join(video_path_array[:-1]) + "/" + ".".join(video_path_array[-1].rsplit(".")[:-1])
+        image_output_path = base_name_no_extension + "/"
+        markdown_path = base_name_no_extension + ".md"
+
+        os.makedirs(image_output_path, exist_ok=True)
+        md_open_file = open(markdown_path, "w") # Create if DNE
+
+        detect_unique_screenshots(video_path, image_output_path, md_open_file)
+        md_open_file.close()
+
+        print('Please Manually verify screenshots and delete duplicates')
+        while True:
+            choice = input("Press y to continue and n to terminate")
+            choice = choice.lower().strip()
+            if choice in ['y', 'n']:
+                break
+            else:
+                print('please enter a valid choice')
+
+        # if choice == 'y':
+        #     convert_screenshots_to_pdf(output_folder_screenshot_path)
+
+
