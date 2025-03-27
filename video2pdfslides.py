@@ -11,7 +11,7 @@ import argparse
 
 OUTPUT_SLIDES_DIR = f"/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week\ 01"
 
-FRAME_RATE = 1                   # no.of frames per second that needs to be processed, fewer the count faster the speed
+FRAME_RATE = 3               # no.of frames per second that needs to be processed, fewer the count faster the speed but could miss some freames due to MIN/MAX percent
 WARMUP = FRAME_RATE              # initial number of frames to be skipped
 FGBG_HISTORY = FRAME_RATE * 15   # no.of frames in background object
 VAR_THRESHOLD = 16               # Threshold on the squared Mahalanobis distance between the pixel and the model to decide whether a pixel is well described by the background model.
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         # "/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week 01/07 - Data Mining Technique View/01 - Lecture video (720p).mp4",
     ]
     
-    curr_path = "/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week 01/"
+    curr_path = "/home/marcochsner/Documents/trunk/_3-CUBCS/DataMining/data-mining-methods/Week 04/"
     dir_list = os.listdir(curr_path)
     for d in dir_list:
         if os.path.isfile(os.path.join(curr_path, d)):
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         ...
     elif len(video_paths) > 0:
         for video_path in video_paths:
-            output_path = "/home/marcochsner/Documents/trunk/_3-CUBCS/Networks/Networks1/Wk1/"
+            # output_path = "/home/marcochsner/Documents/trunk/_3-CUBCS/Networks/Networks1/Wk1/"
             choice = 'y'
             output_folder_screenshot_path = initialize_output_folder(video_path)
             print('video_path', video_path)
